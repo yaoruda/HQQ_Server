@@ -17,7 +17,7 @@ class FirstTopic(models.Model):
     name = models.CharField(max_length=32, verbose_name="一级话题名称")
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    delete_mark = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
+    state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
 
 
 class SecondTopic(models.Model):
@@ -35,4 +35,4 @@ class SecondTopic(models.Model):
     name = models.CharField(max_length=32, verbose_name="二级话题名称")
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    delete_mark = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
+    state = models.SmallIntegerField(verbose_name='审核中2，不可用1，正常0', default=0)

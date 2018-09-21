@@ -17,6 +17,11 @@ class FirstTopicListCreateView(generics.ListCreateAPIView):
     serializer_class = serializers.FirstTopicSerializer
     lookup_field = 'id'
 
+class SecondTopicListCreateView(generics.ListCreateAPIView):
+    queryset = models.SecondTopic.objects.all()
+    # authentication_classes = [auth.APIAuth, ]
+    serializer_class = serializers.SecondTopicSerializer
+    lookup_field = 'id'
 
 class SecondTopic(APIView):
     # authentication_classes = [auth.APIAuth, ]
