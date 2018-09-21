@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# __author__= "Ruda"
+# Data: 2018/9/14
+
 import hashlib
 import time
 import random
@@ -7,18 +11,14 @@ from rest_framework import status
 from rest_framework.response import Response
 
 from rest_framework.views import APIView
-from users import models
-from users import serializers
-from users import auth
+from user import models
+from user import serializers
+from DRF import auth
 
-# TODO:开发用待删除
-import logging
-logging.getLogger().setLevel(logging.INFO)
 
 class MyUserViewSet(viewsets.ModelViewSet):
     queryset = models.MyUser.objects.all()
     serializer_class = serializers.MyUserSerializer
-    permission_classes = ()
     authentication_classes = [auth.APIAuth, ]
     lookup_field = 'id'
 
@@ -26,15 +26,14 @@ class MyUserViewSet(viewsets.ModelViewSet):
 class ScoreViewSet(viewsets.ModelViewSet):
     queryset = models.Score.objects.all()
     serializer_class = serializers.ScoreSerializer
-    permission_classes = ()
+    authentication_classes = [auth.APIAuth, ]
     lookup_field = 'user'
 
 
 class TokenViewSet(viewsets.ModelViewSet):
-    queryset = models.TokenLogin.objects.all()
+    queryset = models.Token.objects.all()
     serializer_class = serializers.TokenSerializer
-    permission_classes = ()
-
+    authentication_classes = [auth.APIAuth, ]
     lookup_field = 'user'
 
     # 创建=的时候，自动引用当前登录用户
@@ -72,7 +71,7 @@ class VerifyToken(APIView):
         user = models.MyUser.objects.filter(phone=phone).first()
         if user:  # 存在用此手机号注册的用户
             token = get_random_token(phone)
-            models.TokenLogin.objects.update_or_create(defaults={"token": token}, user=user)
+            models.Token.objects.update_or_create(defaults={"token": token}, user=user)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -85,31 +84,62 @@ class SendVerifyCode(APIView):
     '''
     def post(self, request):
         phone = request.query_params.get('phone')
-        user = models.MyUser.objects.filter(phone=phone).first()
-        if not user:  # 存在用此手机号注册的用户
-            return Response(status=status.HTTP_406_NOT_ACCEPTABLE)
+        if not phone:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         code = random.randint(100, 999)
+        if not code:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         # TODO:发送验证码...
 
         if True:  # 发送验证码成功
-            models.VerifyCode.objects.update_or_create(defaults={"code": code}, user=user)
+            models.VerifyCode.objects.update_or_create(defaults={"code": code, "phone": phone})
             return Response(dict({'code': code}), status=status.HTTP_200_OK)
         # else:
             # TODO:处理短信验证码发送失败的情况
 
 
+def register_new_user(phone):  # 初始化一个用户
+    # TODO: 类似这种地方的try和catch以后要加上
+    new_user = models.MyUser(phone=phone, age=0)
+    new_user.save()
+
+    new_user_score = models.Score(score=12000, user=new_user)
+    token = get_random_token(phone)  # 给用户下发访问Token
+    new_user_token = models.Token(token=token, user=new_user)
+    new_user_score.save()
+    new_user_token.save()
+
+    return new_user.pk
+
+from rest_framework.exceptions import APIException
 class RegisterAndLogin(APIView):
     '''
     （注册）并登录
     '''
     def post(self, request):
-        phone = request.query_params.get('phone')  # 不一定是已注册用户的手机号
-        code = request.query_params.get('code')
+        response = {'code': 0}
         try:
-            models.VerifyCode.objects.get(phone=phone, )
-        except models.User.DoesNotExist:  # 如果抛出的异常是"不存在"，返回没有找到
-                return Response(status=status.HTTP_404_NOT_FOUND)
+            phone = request.query_params.get('phone')  # 不一定是已注册用户的手机号
+        except APIException:
+            response['code'] = 1
+            response['error'] = "请求缺少字段:phone"
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-        user = models.MyUser.objects.filter(phone=phone).first()
-
-        # if user:
+        code = request.query_params.get('code')
+        if not code:
+            response['code'] = 1
+            response['error'] = "请求缺少字段:phone"
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+        is_registered = models.MyUser.objects.filter(phone=phone).first()  # 去用户表里查用户，有：
+        if is_registered:  # 已经注册的用户->直接登录
+            # TODO:if有登录后首页之前的逻辑的完善
+            token = get_random_token(phone)  # 给用户下发访问Token
+            response['token'] = token
+            response['execute'] = "Login"
+            return Response(response, status=status.HTTP_200_OK)
+        else:  # 未注册的用户->直接注册
+            # TODO:注册新用户逻辑的完善
+            user_id = register_new_user(phone)  # 注册到用户表、score表、token表
+            response['user_id'] = user_id
+            response['execute'] = "Register"
+            return Response(response, status=status.HTTP_201_CREATED)

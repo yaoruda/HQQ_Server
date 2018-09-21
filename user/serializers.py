@@ -3,7 +3,7 @@
 # Data: 2018/9/14
 
 from rest_framework import serializers
-from users import models
+from user import models
 
 
 class MyUserSerializer(serializers.ModelSerializer):
@@ -35,7 +35,7 @@ class TokenSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
 
     class Meta:
-        model = models.TokenLogin
+        model = models.Token
         fields = (
             'id',
             'user',

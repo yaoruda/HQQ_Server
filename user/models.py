@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+# __author__= "Ruda"
+# Data: 2018/9/14
+
 from django.db import models
 from django.contrib.auth.models import User
-
-# Create your models here.
 
 
 class MyUser (models.Model):
@@ -28,7 +30,7 @@ class MyUser (models.Model):
 
     phone = models.CharField(max_length=20, verbose_name='用户手机号', unique=True)
     nickname = models.CharField(max_length=40, verbose_name='用户昵称', unique=True)
-    age = models.IntegerField(verbose_name='用户年龄')
+    age = models.IntegerField(verbose_name='用户年龄', default=0)
     gender = models.SmallIntegerField(
         verbose_name='用户性别',
         choices=((0, '女'), (1, '男')),
@@ -41,8 +43,8 @@ class Score(models.Model):
     score = models.IntegerField(verbose_name='用户得分')
 
 
-class TokenLogin(models.Model):
-    user = models.OneToOneField(to=MyUser, related_name='tokenlogin', on_delete=models.CASCADE, verbose_name='外键用户id')
+class Token(models.Model):
+    user = models.OneToOneField(to=MyUser, related_name='token', on_delete=models.CASCADE, verbose_name='外键用户id')
     token = models.CharField(max_length=256, verbose_name='api用Token')
 
 
