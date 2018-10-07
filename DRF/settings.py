@@ -39,8 +39,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'celery',
     'user.apps.UsersConfig',
     'topic.apps.TopicConfig',
+    'friend.apps.FriendConfig',
+    'group.apps.GroupConfig',
+    'notice.apps.NoticeConfig',
+    'post.apps.PostConfig',
+    'report.apps.ReportConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -138,7 +145,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 
@@ -182,3 +189,35 @@ LOGGING = {
         },
     }
 }
+
+
+# CELERY_FORCE_EXECV = True  # 避免某些死锁
+
+# CELERY_ACKS_LATE = True  # 出错之后允许重试
+
+# CELERY_MAX_TASKS_PER_CHILD = 100  # 每个worker最多执行100个任务之后就会被销毁
+
+# CELERY_TASK_TIME_LIMIT = 每个任务最多运行多少秒
+
+
+
+
+# CELERY_BROKER = 'redis'
+
+# redis://:password@hostname:port/db_number
+CELERY_BROKER_URL = 'redis://39.105.97.242:6379/1'
+
+# 可见性超时时间定义了等待职程在消息分派到其他职程之前确认收到任务的秒数
+# CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}  # 1 hour.
+
+# 在 Redis 中存储任务的状态和返回值
+CELERY_RESULT_BACKEND = 'redis://39.105.97.242:6379/2'
+#
+# CELERY_TASK_ROUTES = {
+#     'user.tasks.*': {
+#         'queue': 'user_queue'
+#     }
+# }
+
+# CELERY_TASK_DEFAULT_QUEUE = 'work_queue'
+#
