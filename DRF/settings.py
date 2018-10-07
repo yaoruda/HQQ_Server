@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'friend.apps.FriendConfig',
     'group.apps.GroupConfig',
     'notice.apps.NoticeConfig',
-    'post.apps.PostConfig',
+    'forum.apps.ForumConfig',
     'report.apps.ReportConfig',
 
 ]
