@@ -41,11 +41,17 @@ class MyUser (models.Model):
 class Score(models.Model):
     user = models.OneToOneField(to=MyUser, related_name='score', on_delete=models.CASCADE, verbose_name='外键用户id')
     score = models.IntegerField(verbose_name='用户得分')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
 
 
 class Token(models.Model):
     user = models.OneToOneField(to=MyUser, related_name='token', on_delete=models.CASCADE, verbose_name='外键用户id')
     token = models.CharField(max_length=256, verbose_name='api用Token')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
 
 
 class VerifyCode(models.Model):
@@ -57,4 +63,6 @@ class VerifyCode(models.Model):
     '''
     phone = models.CharField(max_length=20, verbose_name='用户手机号', unique=True)
     code = models.CharField(max_length=8, verbose_name='验证码')
-    expires = models.DateTimeField(auto_now=True, verbose_name='短信验证码创建时间')
+    create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
+    state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)

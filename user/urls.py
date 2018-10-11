@@ -1,21 +1,23 @@
 # -*- coding: utf-8 -*-
 # __author__= "Ruda"
 # Data: 2018/9/14
-
 from user import views
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 
-router = DefaultRouter()
-router.register('myuser', views.MyUserViewSet, base_name='user')
-router.register('score', views.ScoreViewSet, base_name='score')
-router.register('token', views.TokenViewSet, base_name='token')
+version_1 = 'v1/'
+'''
+2018年9月份开始的版本
+初创版
+亟待优化重构
+'''
+
+
 
 
 urlpatterns = [
-    path('getcode/', views.SendVerifyCode.as_view()),
-    path('verifytoken/', views.VerifyToken.as_view()),
-    path('registerandlogin/', views.RegisterAndLogin.as_view()),
-    path('', include(router.urls)),
+    path(version_1 + 'get-code/', views.SendVerifyCode.as_view()),
+    path(version_1 + 'verify-token/', views.VerifyToken.as_view()),
+    path(version_1 + 'register-and-login/', views.RegisterAndLogin.as_view()),
+    path(version_1 + 'change-score', views.ChangeScore.as_view()),
 ]
 
