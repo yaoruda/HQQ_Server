@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'notice.apps.NoticeConfig',
     'forum.apps.ForumConfig',
     'report.apps.ReportConfig',
+    'hqq_tool.apps.HqqToolConfig',
 
 ]
 
@@ -214,7 +215,7 @@ CELERY_BROKER_URL = 'redis://39.105.97.242:6379/1'
 CELERY_RESULT_BACKEND = 'redis://39.105.97.242:6379/2'
 #
 # CELERY_TASK_ROUTES = {
-#     'user.tasks.*': {
+#     'hqq_user.tasks.*': {
 #         'queue': 'user_queue'
 #     }
 # }
