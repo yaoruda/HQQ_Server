@@ -37,6 +37,13 @@ class MyUser (models.Model):
         default=0
     )
 
+    def __str__(self):
+        return self.nickname
+
+    class Meta:
+        verbose_name = "用户"
+        verbose_name_plural = verbose_name
+
 
 class Score(models.Model):
     user = models.OneToOneField(to=MyUser, related_name='score', on_delete=models.CASCADE, verbose_name='外键用户id')
@@ -45,6 +52,13 @@ class Score(models.Model):
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
 
+    def __str__(self):
+        return self.user
+
+    class Meta:
+        verbose_name = "分数"
+        verbose_name_plural = verbose_name
+
 
 class Token(models.Model):
     user = models.OneToOneField(to=MyUser, related_name='token', on_delete=models.CASCADE, verbose_name='外键用户id')
@@ -52,6 +66,13 @@ class Token(models.Model):
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
+
+    def __str__(self):
+        return self.user
+
+    class Meta:
+        verbose_name = "Token"
+        verbose_name_plural = verbose_name
 
 
 class VerifyCode(models.Model):
@@ -66,3 +87,10 @@ class VerifyCode(models.Model):
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
+
+    def __str__(self):
+        return self.phone
+
+    class Meta:
+        verbose_name = "验证码"
+        verbose_name_plural = verbose_name
