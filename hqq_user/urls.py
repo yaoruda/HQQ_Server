@@ -18,6 +18,6 @@ urlpatterns = [
     path(version_1 + 'get-code/', views.SendVerifyCode.as_view()),
     path(version_1 + 'verify-token/', views.VerifyToken.as_view()),
     path(version_1 + 'register-and-login/', views.RegisterAndLogin.as_view()),
-    path(version_1 + 'change-score', views.ChangeScore.as_view()),
+    path(version_1 + 'change-score/', views.ChangeScore.as_view()),
 ]
 

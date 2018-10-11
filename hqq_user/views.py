@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from hqq_user import models
 from hqq_user import tasks
-import hqq_tool
+from hqq_tool import views as hqq_tool
 
 import logging
 
@@ -72,7 +72,8 @@ class SendVerifyCode(APIView):
         # TODO:发送验证码...
 
         if True:  # 发送验证码成功
-            models.VerifyCode.objects.update_or_create(defaults={"code": verify_code, "phone": phone})
+            tasks.save_verify_code.delay(verify_code, phone)  # 异步的方法
+            # models.VerifyCode.objects.update_or_create(defaults={"code": verify_code, "phone": phone})  # 同步的方法
             return_info['verify_code'] = verify_code
             return Response(return_info, status=status.HTTP_200_OK)
         # else:
@@ -137,40 +138,12 @@ class ChangeScore(APIView):
     def post(self, request):
         return_info = {'code': 200}
         request_params = {}
-        request_params['hqq_user'] = request.query_params.get('hqq_user')
+        request_params['user'] = request.query_params.get('user')
         request_params['operation'] = request.query_params.get('operation')
         request_params['value'] = request.query_params.get('value')
         if hqq_tool.is_request_empty(request_params, return_info):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
         return Response(return_info)
-
-
-# def is_request_empty(request_params, return_info):
-#     '''
-#     检测request参数是否缺失
-#     :param request_params:
-#     :param return_info:
-#     :return:
-#     '''
-#     for param_name, param_value in request_params.items():
-#         if not param_value:  # 未获得此参数（None）
-#             message = '请求缺少字段:' + str(param_name)
-#             add_response(400, message, return_info)
-#             return True
-#     return False
-#
-#
-# def add_response(code, message, return_info):
-#     '''
-#     在return_info中修改code并添加信息
-#     :param code:
-#     :param message:
-#     :param return_info:
-#     :return:
-#     '''
-#     return_info['code'] = code
-#     return_info['message'] = message
-#     return return_info
 
 
 def get_random_token(phone):

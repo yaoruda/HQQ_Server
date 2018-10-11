@@ -20,7 +20,7 @@ from rest_framework.documentation import include_docs_urls
 
 # 基于类的视图，使用混合，一定要在后面加：as_view()方法！否则缺少参数：
 urlpatterns = [
-    path('hqq_user/', include('hqq_user.urls')),
+    path('user/', include('hqq_user.urls')),
     path('topic/', include('topic.urls')),
     path('admin/', admin.site.urls),
     path('doc/', include_docs_urls(title='HQQ')),

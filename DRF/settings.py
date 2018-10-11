@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'celery',
-    'user.apps.UsersConfig',
+    'hqq_user.apps.HqqUsersConfig',
     'topic.apps.TopicConfig',
     'friend.apps.FriendConfig',
     'group.apps.GroupConfig',
@@ -222,3 +222,4 @@ CELERY_RESULT_BACKEND = 'redis://39.105.97.242:6379/2'
 
 # CELERY_TASK_DEFAULT_QUEUE = 'work_queue'
 #
+task_serializer = 'pickle'
