@@ -3,11 +3,11 @@
 # Data: 2018/9/15
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-from user import models
+from hqq_user import models
 
 '''
 要实现自定义身份验证方案，请继承 BaseAuthentication 并重写 .authenticate(self, request) 方法。
-如果认证成功，该方法应返回 (user, auth) 的二元组，否则返回 None。
+如果认证成功，该方法应返回 (hqq_user, auth) 的二元组，否则返回 None。
 '''
 
 
