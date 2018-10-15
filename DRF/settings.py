@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'celery',
     'hqq_user.apps.HqqUsersConfig',
     'topic.apps.TopicConfig',
+    'hqq_chat.apps.ChatConfig',
     'friend.apps.FriendConfig',
     'group.apps.GroupConfig',
     'notice.apps.NoticeConfig',
