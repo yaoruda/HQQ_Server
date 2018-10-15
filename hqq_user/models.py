@@ -27,9 +27,9 @@ class MyUser (models.Model):
     数据更新时间 refresh_time
     删除标志 delete_mark
     '''
-
-    phone = models.CharField(max_length=20, verbose_name='用户手机号', unique=True)
-    nickname = models.CharField(max_length=40, verbose_name='用户昵称', unique=True)
+    id = models.CharField(max_length=32, verbose_name='用户id主键', primary_key=True)
+    phone = models.CharField(max_length=20, verbose_name='用户手机号')
+    nickname = models.CharField(max_length=40, verbose_name='用户昵称')
     age = models.IntegerField(verbose_name='用户年龄', default=0)
     gender = models.SmallIntegerField(
         verbose_name='用户性别',
@@ -46,14 +46,22 @@ class MyUser (models.Model):
 
 
 class Score(models.Model):
-    user = models.OneToOneField(to=MyUser, related_name='score', on_delete=models.CASCADE, verbose_name='外键用户id')
+    id = models.CharField(max_length=32, verbose_name='用户得分id主键', primary_key=True)
+    user_id = models.CharField(max_length=32, verbose_name='用户id主键')
+
+    # user = models.OneToOneField(to=MyUser, related_name='score', on_delete=models.CASCADE, verbose_name='外键用户id')
+
     score = models.IntegerField(verbose_name='用户得分')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
+    delete_mark = models.SmallIntegerField(
+        verbose_name='删除标记',
+        choices=((0, '正常'), (1, '删除')),
+        default=0
+    )
 
     def __str__(self):
-        return self.user
+        return self.user_id
 
     class Meta:
         verbose_name = "分数"
@@ -61,14 +69,19 @@ class Score(models.Model):
 
 
 class Token(models.Model):
-    user = models.OneToOneField(to=MyUser, related_name='token', on_delete=models.CASCADE, verbose_name='外键用户id')
+    id = models.CharField(max_length=32, verbose_name='Token_id主键', primary_key=True)
+    user_id = models.CharField(max_length=32, verbose_name='用户id主键')
     token = models.CharField(max_length=256, verbose_name='api用Token')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
+    delete_mark = models.SmallIntegerField(
+        verbose_name='删除标记',
+        choices=((0, '正常'), (1, '删除')),
+        default=0
+    )
 
     def __str__(self):
-        return self.user
+        return self.user_id
 
     class Meta:
         verbose_name = "Token"
@@ -82,11 +95,16 @@ class VerifyCode(models.Model):
     :短信验证码
     :验证码更新时间
     '''
-    phone = models.CharField(max_length=20, verbose_name='用户手机号', unique=True)
+    id = models.CharField(max_length=32, verbose_name='验证码id主键', primary_key=True)
+    phone = models.CharField(max_length=20, verbose_name='用户手机号')
     code = models.CharField(max_length=8, verbose_name='验证码')
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
-    state = models.SmallIntegerField(verbose_name='删除1，正常0', default=0)
+    delete_mark = models.SmallIntegerField(
+        verbose_name='删除标记',
+        choices=((0, '正常'), (1, '删除')),
+        default=0
+    )
 
     def __str__(self):
         return self.phone
