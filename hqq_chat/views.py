@@ -2,10 +2,12 @@
 # __author__= "Ruda"
 # Data: 2018/10/12
 
+import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from hqq_tool import views as hqq_tool
+from hqq_tool.rongcloud import RongCloud
 from hqq_chat import models as chat_models
 
 
@@ -22,7 +24,7 @@ class Add(APIView):
         # location & city,
         :return:
         '''
-        return_info = {'code': 200}
+        return_info = {'code': 0}
         request_params_name = [
             'user_id',
             'first_topic_id',

@@ -4,15 +4,19 @@
 
 import hashlib
 import time
+import datetime
 import random
+import json
 
 from rest_framework import status
 from rest_framework.response import Response
-
 from rest_framework.views import APIView
+
+from hqq_tool.rongcloud import RongCloud
+from hqq_tool import views as hqq_tool
+
 from hqq_user import models as user_models
 from hqq_user import tasks
-from hqq_tool import views as hqq_tool
 
 
 class VerifyToken(APIView):
@@ -90,13 +94,25 @@ class SendVerifyCode(APIView):
 
 class RegisterAndLogin(APIView):
     '''
-    （注册）并登录
+    注册并登录
+    @:param phone:aaa.
+    @:param code
+    @:param nickname
+    @:param age
+    @:param gender
+    @:param portrait_url
+
     '''
+
     def post(self, request):
         return_info = {'code': 0}
         request_params_name = [
             'phone',
             'code',
+            'nickname',
+            'age',
+            'gender',
+            'portrait_url',
         ]
         request_params = {}
         for params in request_params_name:
@@ -105,6 +121,11 @@ class RegisterAndLogin(APIView):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
         phone = request_params.get(request_params_name[0])
         code = request_params.get(request_params_name[1])
+        nickname = request_params.get(request_params_name[2])
+        age = request_params.get(request_params_name[3])
+        gender = request_params.get(request_params_name[4])
+        portrait_url = request_params.get(request_params_name[5])
+
         #  检验是否给此手机发送过验证码
         if not user_models.VerifyCode.objects.filter(phone=phone).first():
             return_info['code'] = 401
@@ -123,7 +144,7 @@ class RegisterAndLogin(APIView):
                 return Response(return_info, status=status.HTTP_200_OK)
             else:  # 未注册的用户->直接注册
                 # TODO:注册新用户逻辑的完善
-                user_id = register_new_user(phone)  # 注册到用户表、score表、token表
+                user_id = register_new_user(phone, nickname, age, gender, portrait_url)  # 注册到用户表、score表、token表
                 return_info['user_id'] = user_id
                 return_info['code'] = 202
                 return_info['description'] = '执行注册'
@@ -209,10 +230,23 @@ def is_code_correct(phone, code):  # 检验验证码正确与否
         return False
 
 
-def register_new_user(phone):  # 初始化一个用户
+def register_new_user(phone, nickname, age, gender, portrait_url):
     # TODO: 类似这种地方的try和catch以后要加上
     user_pk_id = hqq_tool.get_uuid()
-    new_user = user_models.MyUser.objects.create(id=user_pk_id, phone=phone, age=0)
+    rongyun_api = RongCloud()
+    aaa = rongyun_api.User.getToken(user_pk_id, nickname, portrait_url)
+    bbb = str(aaa)
+    bbb.replace('\'', '\"')
+    rongyun_return_json = json.loads(bbb)
+    if rongyun_return_json['code'] == 200:
+        rongyun_token = rongyun_return_json['token']
+    # else:
+        #TODO:处理融云异常
+
+    login_time = datetime.datetime.now()
+    new_user = user_models.MyUser.objects.create(id=user_pk_id, phone=phone, nickname=nickname, age=age, gender=gender,
+                                                 state=0, login_time=login_time, portrait_url=portrait_url,
+                                                 rongyun_token=rongyun_token)
 
     score_pk_id = hqq_tool.get_uuid()
     new_user_score = user_models.Score.objects.create(id=score_pk_id, user_id=user_pk_id, score=1200)

@@ -15,14 +15,18 @@ from .group import Group
 from .chatroom import Chatroom
 from .push import Push
 from .sms import SMS
+from hqq_tool import views as hqq_tool
 
 
 class RongCloud:
     def __init__(self, app_key=None, app_secret=None):
+        acm_rongyun_api_data = hqq_tool.get_acm_data('rongyun_api')
+        key = acm_rongyun_api_data['APP_KEY']
+        secret = acm_rongyun_api_data['APP_SECRET']
         if app_key is None:
-            app_key = os.environ.get('APP_KEY', '')
+            app_key = key
         if app_secret is None:
-            app_secret = os.environ.get('APP_SECRET', '')
+            app_secret = secret
         self.User = User(app_key, app_secret)
         self.Message = Message(app_key, app_secret)
         self.Wordfilter = Wordfilter(app_key, app_secret)
