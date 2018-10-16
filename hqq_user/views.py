@@ -14,8 +14,6 @@ from hqq_user import models as user_models
 from hqq_user import tasks
 from hqq_tool import views as hqq_tool
 
-import logging
-
 
 class VerifyToken(APIView):
     """
@@ -26,13 +24,18 @@ class VerifyToken(APIView):
     def post(self, request):
         # POST,data,在request里保存的都是空，只有query_params有东西，不知道为啥
         return_info = {'code': 0}
+        request_params_name = [
+            'phone',
+            'token',
+        ]
         request_params = {}
-        request_params['phone'] = request.query_params.get('phone')
-        request_params['token'] = request.query_params.get('token')  # old_token
+        for params in request_params_name:
+            request_params[params] = request.query_params.get(params)
         if hqq_tool.is_request_empty(request_params, return_info):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        phone = request_params.get('phone')
-        old_token = request_params.get('token')
+        phone = request_params.get(request_params_name[0])
+        old_token = request_params.get(request_params_name[1])
+
         old_token_info = user_models.Token.objects.values('update_time', 'user_id').filter(token=old_token).first()
         if old_token_info:  # 如果存在此token，获取它的时间和用户id
             update_time = old_token_info['update_time']
@@ -40,7 +43,7 @@ class VerifyToken(APIView):
             result = verify_token_time(update_time)  # 检验Token是否过期
             if result:
                 # Token未过期
-                return_info['code'] = 0
+                return_info['code'] = 200
                 return_info['info'] = 'Token验证成功'
                 return_info['user_id'] = user_id
                 new_token = refresh_token(user_id, phone)  # 分配新Token
@@ -48,11 +51,11 @@ class VerifyToken(APIView):
                 return Response(return_info, status=status.HTTP_200_OK)
             else:
                 # Token过期
-                return_info['code'] = 1
+                return_info['code'] = 401
                 return_info['info'] = 'Token已过期'
                 return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return_info['code'] = 2
+            return_info['code'] = 402
             return_info['info'] = 'Token不合法'
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
@@ -63,16 +66,22 @@ class SendVerifyCode(APIView):
     '''
     def get(self, request):
         return_info = {'code': 0}
+        request_params_name = [
+            'phone',
+        ]
         request_params = {}
-        request_params['phone'] = request.query_params.get('phone')
+        for params in request_params_name:
+            request_params[params] = request.query_params.get(params)
         if hqq_tool.is_request_empty(request_params, return_info):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        phone = request_params.get('phone')
+        phone = request_params.get(request_params_name[0])
         verify_code = random.randint(100, 999)  # 生成随机3位验证码
         # TODO:发送验证码...
 
         if True:  # 发送验证码成功
             tasks.save_verify_code.delay(verify_code, phone)  # 异步
+            return_info['code'] = 200
+            return_info['description'] = '发送验证码成功'
             return_info['verify_code'] = verify_code
             return Response(return_info, status=status.HTTP_200_OK)
         # else:
@@ -85,16 +94,20 @@ class RegisterAndLogin(APIView):
     '''
     def post(self, request):
         return_info = {'code': 0}
+        request_params_name = [
+            'phone',
+            'code',
+        ]
         request_params = {}
-        request_params['phone'] = request.query_params.get('phone')  # 不一定是已注册用户的手机号
-        request_params['code'] = request.query_params.get('code')  # 用户填写的短信验证码
+        for params in request_params_name:
+            request_params[params] = request.query_params.get(params)
         if hqq_tool.is_request_empty(request_params, return_info):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        phone = request_params.get('phone')
-        code = request_params.get('code')
+        phone = request_params.get(request_params_name[0])
+        code = request_params.get(request_params_name[1])
         #  检验是否给此手机发送过验证码
         if not user_models.VerifyCode.objects.filter(phone=phone).first():
-            return_info['code'] = 1
+            return_info['code'] = 401
             return_info['error'] = '还未向此手机发送过验证码'
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
         #  检验验证码正确与否
@@ -105,17 +118,19 @@ class RegisterAndLogin(APIView):
                 user_id = str(is_registered['id'])
                 new_token = refresh_token(user_id, phone)
                 return_info['token'] = new_token
-                return_info['execute'] = "登录"
+                return_info['code'] = 201
+                return_info['description'] = '执行登录'
                 return Response(return_info, status=status.HTTP_200_OK)
             else:  # 未注册的用户->直接注册
                 # TODO:注册新用户逻辑的完善
                 user_id = register_new_user(phone)  # 注册到用户表、score表、token表
                 return_info['user_id'] = user_id
-                return_info['execute'] = "注册"
+                return_info['code'] = 202
+                return_info['description'] = '执行注册'
                 return Response(return_info, status=status.HTTP_200_OK)
         else:
             # 短信验证码错误
-            return_info['code'] = 1
+            return_info['code'] = 402
             return_info['error'] = "短信验证码错误"
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
@@ -131,12 +146,17 @@ class ChangeScore(APIView):
 
     def post(self, request):
         return_info = {'code': 0}
+        request_params_name = [
+            'user',
+            'operation',
+            'value',
+        ]
         request_params = {}
-        request_params['user'] = request.query_params.get('user')
-        request_params['operation'] = request.query_params.get('operation')
-        request_params['value'] = request.query_params.get('value')
+        for params in request_params_name:
+            request_params[params] = request.query_params.get(params)
         if hqq_tool.is_request_empty(request_params, return_info):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
+
         return Response(return_info)
 
 

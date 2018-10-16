@@ -28,7 +28,7 @@ from django.db import models
 
 
 class Chat(models.Model):
-    chat_id = models.CharField(max_length=32, verbose_name='单聊id主键', primary_key=True)
+    id = models.CharField(max_length=32, verbose_name='单聊id主键', primary_key=True)
     create_user_id = models.CharField(max_length=32, verbose_name='创建者id')
     join_user_id = models.CharField(max_length=32, verbose_name='参与者id')
     first_topic_id = models.CharField(max_length=32, verbose_name='一级话题id')
@@ -53,7 +53,7 @@ class Chat(models.Model):
     )
 
     def __str__(self):
-        return
+        return Chat.id
 
     class Meta:
         verbose_name = "单聊"
