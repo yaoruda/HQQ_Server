@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-import acm
+import hqq_tool.views as hqq_tool
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -86,33 +86,17 @@ WSGI_APPLICATION = 'DRF.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
-# ==============acm==================
-# acm proporties
-ENDPOINT = "acm.aliyun.com:8080"
-NAMESPACE = "520a608f-cf8e-4769-99a4-aa09b4397088"
-AK = "LTAIbIchC6epwWTO"
-SK = "cpIAKyNPnbwACvuU303gKeqAUXVIFM"
 
-# get config
-client = acm.ACMClient(ENDPOINT, NAMESPACE, AK, SK)
-data_id = "local_db_2"
-group = "DEFAULT_GROUP"
-db_info = client.get(data_id, group, timeout=30, no_snapshot=True)
-db_info = db_info.replace('\r\n', ':')
-db_info = db_info.split(':')
-# add watch
-# import time
-# client.add_watcher(data_id, group, lambda x: print("config change detected: " + x))
-# time.sleep(5)  # wait for config changes
-# ==============acm==================
+
+data = hqq_tool.get_acm_data('local_db_2')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': db_info[db_info.index('NAME') + 1],
-        'USER': db_info[db_info.index('USER') + 1],
-        'PASSWORD': db_info[db_info.index('PASSWORD') + 1],
-        'HOST': db_info[db_info.index('HOST') + 1],
-        'PORT': db_info[db_info.index('PORT') + 1],
+        'NAME': data['NAME'],
+        'USER': data['USER'],
+        'PASSWORD': data['PASSWORD'],
+        'HOST': data['HOST'],
+        'PORT': data['PORT'],
     }
 }
 
