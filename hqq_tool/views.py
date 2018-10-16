@@ -3,6 +3,8 @@
 # Data: 2018/10/11
 import time as sys_time
 import uuid as sys_uuid
+import acm
+import json
 
 
 def is_request_empty(request_params, return_info):
@@ -51,3 +53,18 @@ def get_uuid():
         print(uuid.__len__())
 
     return uuid
+
+
+def get_acm_data(data_name):
+    ENDPOINT = "acm.aliyun.com:8080"
+    NAMESPACE = "520a608f-cf8e-4769-99a4-aa09b4397088"
+    AK = "LTAIbIchC6epwWTO"
+    SK = "cpIAKyNPnbwACvuU303gKeqAUXVIFM"
+    client = acm.ACMClient(ENDPOINT, NAMESPACE, AK, SK)
+    group = "DEFAULT_GROUP"
+    data_raw = client.get(data_name, group, timeout=30, no_snapshot=True)
+    data_json = json.loads(data_raw)
+    data_dict = {}
+    for key in data_json:
+        data_dict[key] = data_json[key]
+    return data_dict
