@@ -22,14 +22,14 @@ from hqq_user import tasks
 class VerifyToken(APIView):
     """
     校验token
-    :param phone:用户手机号
+    :param
     :return
     """
     def post(self, request):
         # POST,data,在request里保存的都是空，只有query_params有东西，不知道为啥
         return_info = {'code': 0}
         request_params_name = [
-            'phone',
+            'user_id',
             'token',
         ]
         request_params = {}
@@ -37,30 +37,37 @@ class VerifyToken(APIView):
             request_params[params] = request.query_params.get(params)
         if hqq_tool.is_request_empty(request_params, return_info):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        phone = request_params.get(request_params_name[0])
+        request_user_id = request_params.get(request_params_name[0])
         old_token = request_params.get(request_params_name[1])
 
         old_token_info = user_models.Token.objects.values('update_time', 'user_id').filter(token=old_token).first()
         if old_token_info:  # 如果存在此token，获取它的时间和用户id
             update_time = old_token_info['update_time']
             user_id = old_token_info['user_id']
-            result = verify_token_time(update_time)  # 检验Token是否过期
-            if result:
-                # Token未过期
-                return_info['code'] = 200
-                return_info['info'] = 'Token验证成功'
-                return_info['user_id'] = user_id
-                new_token = refresh_token(user_id, phone)  # 分配新Token
-                return_info['new_token'] = new_token
-                return Response(return_info, status=status.HTTP_200_OK)
+            if user_id == request_user_id:
+                result = verify_token_time(update_time)  # 检验Token是否过期
+                if result:
+                    # Token未过期
+                    return_info['code'] = 200
+                    return_info['description'] = 'Token验证成功'
+                    user_phone_dict = user_models.MyUser.objects.values('phone').filter(id=user_id).first()
+                    phone = user_phone_dict['phone']
+                    new_token = refresh_token(user_id, phone)  # 分配新Token
+                    return_info['token'] = new_token
+                    return Response(return_info, status=status.HTTP_200_OK)
+                else:
+                    # Token过期
+                    return_info['code'] = 401
+                    return_info['description'] = 'Token已过期'
+                    return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
             else:
-                # Token过期
-                return_info['code'] = 401
-                return_info['info'] = 'Token已过期'
+                return_info['code'] = 402
+                return_info['description'] = 'Token不合法(Token与用户不匹配)'
                 return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
+
         else:
-            return_info['code'] = 402
-            return_info['info'] = 'Token不合法'
+            return_info['code'] = 403
+            return_info['description'] = 'Token不合法（Token不存在）'
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -129,7 +136,7 @@ class RegisterAndLogin(APIView):
         #  检验是否给此手机发送过验证码
         if not user_models.VerifyCode.objects.filter(phone=phone).first():
             return_info['code'] = 401
-            return_info['error'] = '还未向此手机发送过验证码'
+            return_info['description'] = '还未向此手机发送过验证码'
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
         #  检验验证码正确与否
         if is_code_correct(phone, code):
@@ -138,21 +145,21 @@ class RegisterAndLogin(APIView):
                 # TODO:if有登录后首页之前的逻辑的完善
                 user_id = str(is_registered['id'])
                 new_token = refresh_token(user_id, phone)
-                return_info['token'] = new_token
                 return_info['code'] = 201
                 return_info['description'] = '执行登录'
+                return_info['token'] = new_token
                 return Response(return_info, status=status.HTTP_200_OK)
             else:  # 未注册的用户->直接注册
                 # TODO:注册新用户逻辑的完善
                 user_id = register_new_user(phone, nickname, age, gender, portrait_url)  # 注册到用户表、score表、token表
-                return_info['user_id'] = user_id
                 return_info['code'] = 202
                 return_info['description'] = '执行注册'
+                return_info['user_id'] = user_id
                 return Response(return_info, status=status.HTTP_200_OK)
         else:
             # 短信验证码错误
             return_info['code'] = 402
-            return_info['error'] = "短信验证码错误"
+            return_info['description'] = "短信验证码错误"
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -202,7 +209,7 @@ def get_random_token(phone):
 
 
 def verify_token_time(update_time):
-    time_expiration = 20  # 60 * 60 * 24 * 7
+    time_expiration = 2000  # 60 * 60 * 24 * 7
     time_now = time.time()
     # 转换成时间数组
     update_time = time.strptime(str(update_time), "%Y-%m-%d %H:%M:%S.%f")
