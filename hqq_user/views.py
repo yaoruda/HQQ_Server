@@ -234,14 +234,12 @@ def register_new_user(phone, nickname, age, gender, portrait_url):
     # TODO: 类似这种地方的try和catch以后要加上
     user_pk_id = hqq_tool.get_uuid()
     rongyun_api = RongCloud()
-    aaa = rongyun_api.User.getToken(user_pk_id, nickname, portrait_url)
-    bbb = str(aaa)
-    bbb.replace('\'', '\"')
-    rongyun_return_json = json.loads(bbb)
-    if rongyun_return_json['code'] == 200:
-        rongyun_token = rongyun_return_json['token']
+    rongyun_return = rongyun_api.User.getToken(user_pk_id, nickname, portrait_url)
+    if rongyun_return.result['code'] == 200:
+        rongyun_token = rongyun_return.result['token']
     # else:
         #TODO:处理融云异常
+        # rongyun_token = 'error'
 
     login_time = datetime.datetime.now()
     new_user = user_models.MyUser.objects.create(id=user_pk_id, phone=phone, nickname=nickname, age=age, gender=gender,
