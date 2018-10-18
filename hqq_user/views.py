@@ -209,6 +209,7 @@ def get_random_token(phone):
 
 
 def verify_token_time(update_time):
+    #TODO:指定Tokne过期时间
     time_expiration = 2000  # 60 * 60 * 24 * 7
     time_now = time.time()
     # 转换成时间数组
@@ -261,3 +262,12 @@ def register_new_user(phone, nickname, age, gender, portrait_url):
     new_user_token = user_models.Token.objects.create(id=token_pk_id, user_id=user_pk_id, token=token)
 
     return new_user.pk
+
+
+def is_user_exist(user_id, return_info):
+    if user_models.MyUser.objects.filter(id=user_id).first():
+        return True
+    else:
+        return_info['code'] = 404
+        return_info['description'] = '此用户不存在'
+        return False
