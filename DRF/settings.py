@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'celery',
     'user.apps.UsersConfig',
-    'topic.apps.TopicConfig',
+    'hqq_topic.apps.TopicConfig',
     'friend.apps.FriendConfig',
     'group.apps.GroupConfig',
     'notice.apps.NoticeConfig',
