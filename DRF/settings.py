@@ -40,8 +40,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'celery',
+<<<<<<< HEAD
     'user.apps.UsersConfig',
     'hqq_topic.apps.TopicConfig',
+=======
+    'hqq_user.apps.HqqUsersConfig',
+    'topic.apps.TopicConfig',
+    'hqq_chat.apps.ChatConfig',
+    'hqq_directchat.apps.HqqDirectchatConfig',
+>>>>>>> user_v1_dada1
     'friend.apps.FriendConfig',
     'group.apps.GroupConfig',
     'notice.apps.NoticeConfig',
@@ -198,11 +205,15 @@ CELERY_BROKER_URL = 'redis://39.105.97.242:6379/1'
 # 在 Redis 中存储任务的状态和返回值
 CELERY_RESULT_BACKEND = 'redis://39.105.97.242:6379/2'
 #
-# CELERY_TASK_ROUTES = {
-#     'hqq_user.tasks.*': {
-#         'queue': 'user_queue'
-#     }
-# }
+CELERY_TASK_ROUTES = {
+    'hqq_user.tasks.*': {
+        'queue': 'user_queue'
+    },
+    'hqq_topic.tasks.*': {
+        'queue': 'topic_queue'
+    }
+}
 
 # CELERY_TASK_DEFAULT_QUEUE = 'work_queue'
 #
+task_serializer = 'pickle'

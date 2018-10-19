@@ -3,7 +3,7 @@
 # Data: 2018/9/14
 
 from rest_framework import serializers
-from user import models
+from hqq_user import models
 
 
 class MyUserSerializer(serializers.ModelSerializer):
@@ -20,24 +20,24 @@ class MyUserSerializer(serializers.ModelSerializer):
 
 
 class ScoreSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
+    user = serializers.ReadOnlyField(source='hqq_user.username')
 
     class Meta:
         model = models.Score
         fields = (
             'id',
-            'user',
+            'hqq_user',
             'score',
         )
 
 
 class TokenSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
+    user = serializers.ReadOnlyField(source='hqq_user.username')
 
     class Meta:
         model = models.Token
         fields = (
             'id',
-            'user',
+            'hqq_user',
             'token',
         )
