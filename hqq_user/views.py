@@ -271,3 +271,12 @@ def is_user_exist(user_id, return_info):
         return_info['code'] = 404
         return_info['description'] = '此用户不存在'
         return False
+
+
+def get_user_nickname(user_id):
+    name = user_models.MyUser.objects.values('nickname').filter(id=user_id).first()
+    if name:
+        name = name['nickname']
+        return name
+    else:
+        return ''

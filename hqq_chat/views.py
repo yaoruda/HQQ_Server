@@ -59,9 +59,9 @@ class Add(APIView):
             return_info['chat_id'] = chat_id
             return Response(return_info, status=status.HTTP_200_OK)
         else:
-            chat = chat_models.Chat(id=chat_id)
-            chat.delete_mark = 1
-            chat.save()
+            new_chat.delete_mark = 1
+            new_chat.state = 4
+            new_chat.save()
             return_info['code'] = 500
             return_info['description'] = '聊天服务器异常，请稍后尝试'
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
@@ -190,24 +190,6 @@ class ExitJoinUser(APIView):
         return Response(return_info, status=status.HTTP_200_OK)
 
 
-def is_chat_exist(chat_id, return_info):
-    if chat_models.Chat.objects.filter(id=chat_id).first():
-        return True
-    else:
-        return_info['code'] = 404
-        return_info['description'] = '此聊天不存在'
-        return False
-
-
-def is_chat_delete(chat_id, return_info):
-    if chat_models.Chat.objects.filter(id=chat_id, delete_mark=1).first():
-        return_info['code'] = 404
-        return_info['description'] = '此聊天已被删除'
-        return True
-    else:
-        return False
-
-
 class ExitCreateUser(APIView):
     def post(self, request):
         '''
@@ -252,3 +234,22 @@ class ExitCreateUser(APIView):
         return_info['code'] = 200
         return_info['description'] = '退出成功'
         return Response(return_info, status=status.HTTP_200_OK)
+
+
+def is_chat_exist(chat_id, return_info):
+    if chat_models.Chat.objects.filter(id=chat_id).first():
+        return True
+    else:
+        return_info['code'] = 404
+        return_info['description'] = '此聊天不存在'
+        return False
+
+
+def is_chat_delete(chat_id, return_info):
+    if chat_models.Chat.objects.filter(id=chat_id, delete_mark=1).first():
+        return_info['code'] = 404
+        return_info['description'] = '此聊天已被删除'
+        return True
+    else:
+        return False
+

@@ -40,6 +40,41 @@ class Group(RongCloudBase):
             })
         return Response(r, desc)
 
+    def create_direct_chat(self, userId1, userId2, groupId, groupName):
+        """
+        创建双人群组方法（创建群组，并将用户加入该群组，用户将可以收到该群的消息，同一用户最多可加入 500 个群，每个群最大至 3000 人，App 内的群组数量没有限制.注：其实本方法是加入群组方法 /group/join 的别名。） 方法
+        @param  userId:要加入群的用户 Id。（必传）
+        @param  userId:要加入群的用户 Id。（必传）
+        @param  groupId:创建群组 Id。（必传）
+        @param  groupName:群组 Id 对应的名称。（必传）
+
+        @return code:返回码，200 为正常。
+        @return errorMessage:错误信息。
+        """
+
+        desc = {
+            "name": "CodeSuccessReslut",
+            "desc": " http 成功返回结果",
+            "fields": [{
+                "name": "code",
+                "type": "Integer",
+                "desc": "返回码，200 为正常。"
+            }, {
+                "name": "errorMessage",
+                "type": "String",
+                "desc": "错误信息。"
+            }]
+        }
+        r = self.call_api(
+            method=('API', 'POST', 'application/x-www-form-urlencoded'),
+            action='/group/create.json',
+            params={
+                "userId": [userId1, userId2],
+                "groupId": groupId,
+                "groupName": groupName
+            })
+        return Response(r, desc)
+
     def sync(self, userId, groupInfo):
         """
         同步用户所属群组方法（当第一次连接融云服务器时，需要向融云服务器提交 userId 对应的用户当前所加入的所有群组，此接口主要为防止应用中用户群信息同融云已知的用户所属群信息不同步。） 方法

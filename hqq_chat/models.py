@@ -41,14 +41,13 @@ class Chat(models.Model):
     popularity = models.IntegerField(verbose_name='热度')
     state = models.SmallIntegerField(
         verbose_name='状态',
-        choices=((0, '待加入'), (1, '已满人')),
-        default=0
+        choices=((0, '待加入'), (1, '已满人'), (2, '已删除'), (3, '已封禁')),
     )
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
     delete_mark = models.SmallIntegerField(
         verbose_name='删除标记',
-        choices=((0, '正常'), (1, '删除'), (2, ''), (3, '')),
+        choices=((0, '正常'), (1, '删除')),
         default=0
     )
 
@@ -58,3 +57,5 @@ class Chat(models.Model):
     class Meta:
         verbose_name = "单聊"
         verbose_name_plural = verbose_name
+
+

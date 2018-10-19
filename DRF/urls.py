@@ -26,4 +26,5 @@ urlpatterns = [
     path('user/', include('hqq_user.urls')),
     path('topic/', include('topic.urls')),
     path('chat/', include('hqq_chat.urls')),
+    path('directchat/', include('hqq_directchat.urls')),
 ]
