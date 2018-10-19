@@ -9,6 +9,7 @@ from hqq_tool import views as hqq_tool
 from hqq_tool.rongcloud import RongCloud
 from hqq_directchat import models as directchat_models
 from hqq_user import views as user_views
+from hqq_directchat import tasks as directchat_tasks
 
 
 class MakeDirectChat(APIView):
@@ -114,10 +115,7 @@ class ExitDirectChat(APIView):
         chat = is_direct_chat_id_users_exist(chat_id, user_id, other_user_id)
         if chat:
             if chat['state'] == 0:
-                chat = directchat_models.DirectChat.objects.filter(id=chat_id).first()
-                chat.state = 1
-                chat.delete_mark = 1
-                chat.save()
+                directchat_tasks.ExitDirectChat.delay(chat_id)
                 return_info['code'] = 200
                 return_info['description'] = '删除私聊成功'
                 return Response(return_info, status=status.HTTP_200_OK)
