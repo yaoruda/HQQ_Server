@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# __author__= "Ruda"
+# __author__= "suangsuang"
 # Data: 2018/9/20
 
 from rest_framework import serializers
-from topic import models
+from hqq_topic import models
 
 
 class FirstTopicSerializer(serializers.ModelSerializer):
@@ -13,16 +13,18 @@ class FirstTopicSerializer(serializers.ModelSerializer):
         fields = (
             'id',
             'name',
+            'state',
         )
 
 
 class SecondTopicSerializer(serializers.ModelSerializer):
-    first_topic = serializers.ReadOnlyField(source='first_topic.name')
+    # first_topic = serializers.ReadOnlyField(source='first_topic.name')
 
     class Meta:
         model = models.SecondTopic
         fields = (
             'id',
             'name',
+            'state',
             'first_topic',
         )
