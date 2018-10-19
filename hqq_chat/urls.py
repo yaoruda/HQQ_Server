@@ -15,6 +15,6 @@ version_1 = 'v1/'
 urlpatterns = [
     path(version_1 + 'add/', views.Add.as_view()),
     path(version_1 + 'join/', views.Join.as_view()),
-    path(version_1 + 'exit-chat-user/', views.ExitChatUser.as_view()),
+    path(version_1 + 'exit/', views.ExitChatUser.as_view()),
 
 ]
