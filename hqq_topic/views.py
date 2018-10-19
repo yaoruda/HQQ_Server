@@ -22,7 +22,7 @@ import time
 
 class AddFirstTopic(APIView):
     """
-    #TODO:添加异步处理
+    #
         添加一级话题
         :param :
         :return
@@ -57,7 +57,7 @@ class AddFirstTopic(APIView):
 
 class AddSecondTopic(APIView):
     """
-         #TODO:添加异步处理
+         #
         添加未审核的二级话题
         :param :
         :return
@@ -86,11 +86,9 @@ class AddSecondTopic(APIView):
             return_info['info'] = '该名字的二级话题已被建立'
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
         elif is_existed:
-            new_second_topic = topic_models.SecondTopic(id=id, name=second_topic_name, first_topic_id=first_topic)
-            new_second_topic.save()
+            topic_tasks.add_new_second_topic.delay(id, second_topic_name, first_topic)
             return_info['code'] = 200
             return_info['info'] = '创建未审核的二级话题成功'
-            # return_info['first_topic_id'] = new_first_topic.id
             return Response(return_info, status=status.HTTP_200_OK)
         else:
             return_info['code'] = 402
@@ -141,7 +139,7 @@ class SelectAllFirstTopic(APIView):
         :return
     """
 
-    def post(self, request):
+    def get(self, request):
         return_info = {'code': 0}
         first_topics = topic_models.FirstTopic.objects.filter(state=0, delete_mark=0)
         # print(first_topics.__str__())
@@ -195,17 +193,18 @@ class SelectUncheckedSecondTopic(APIView):
                 json_dict['id'] = second_topic.id
                 json_dict['name'] = second_topic.name
                 first_topic_name = GetFirstTopicName(second_topic.first_topic_id)
-                if(first_topic_name):
+                if first_topic_name:
                     json_dict['first_topic_name'] = first_topic_name
                     json_list.append(json_dict)
                     return_info['code'] = 200
                     return_info['info'] = '成功返回未审核的二级话题列表'
-                    return_info['unchecked second topic'] = json_list
-                    return Response(return_info, status=status.HTTP_200_OK)
                 else:
                     return_info['code'] = 402
                     return_info['info'] = '没有对应的一级话题'
                     return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
+            return_info['unchecked second topic'] = json_list
+            return Response(return_info, status=status.HTTP_200_OK)
+
         else:
             return_info['code'] = 401
             return_info['info'] = '没有找到未审核的二级话题'
