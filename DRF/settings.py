@@ -40,20 +40,15 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'celery',
-<<<<<<< HEAD
-    'user.apps.UsersConfig',
-    'hqq_topic.apps.TopicConfig',
-=======
     'hqq_user.apps.HqqUsersConfig',
-    'topic.apps.TopicConfig',
+    'hqq_topic.apps.TopicConfig',
     'hqq_chat.apps.ChatConfig',
     'hqq_directchat.apps.HqqDirectchatConfig',
->>>>>>> user_v1_dada1
-    'friend.apps.FriendConfig',
-    'group.apps.GroupConfig',
-    'notice.apps.NoticeConfig',
-    'forum.apps.ForumConfig',
-    'report.apps.ReportConfig',
+    'hqq_friend.apps.HqqFriendConfig',
+    'hqq_group.apps.HqqGroupConfig',
+    'hqq_notice.apps.HqqNoticeConfig',
+    'hqq_forum.apps.HqqForumConfig',
+    'hqq_report.apps.HqqReportConfig',
     'hqq_tool.apps.HqqToolConfig',
 
 ]
@@ -207,10 +202,16 @@ CELERY_RESULT_BACKEND = 'redis://39.105.97.242:6379/2'
 #
 CELERY_TASK_ROUTES = {
     'hqq_user.tasks.*': {
-        'queue': 'user_queue'
+        'queue': 'dd_queue'
     },
     'hqq_topic.tasks.*': {
-        'queue': 'topic_queue'
+        'queue': 'ss_queue'
+    },
+    'hqq_chat.tasks.*': {
+        'queue': 'dd_queue'
+    },
+    'hqq_directchat.tasks.*': {
+        'queue': 'dd_queue'
     }
 }
 
