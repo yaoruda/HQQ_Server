@@ -75,16 +75,16 @@ class Join(APIView):
         '''
         return_info = {'code': 0}
         request_params_name = [
-            'user_id',
             'chat_id',
+            'user_id',
         ]
         request_params = {}
         for param in request_params_name:
             request_params[param] = request.query_params.get(param)
         if hqq_tool.is_request_empty(request_params, return_info):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        user_id = request_params.get(request_params_name[0])
-        chat_id = request_params.get(request_params_name[1])
+        chat_id = request_params.get(request_params_name[0])
+        user_id = request_params.get(request_params_name[1])
 
         # 保证聊天和用户存在
         if not is_chat_exist(chat_id, return_info):
@@ -150,23 +150,23 @@ class Join(APIView):
                 return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ExitJoinUser(APIView):
+class ExitChatUser(APIView):
     def post(self, request):
         '''
-        参与者退出
+        用户退出单聊
         '''
         return_info = {'code': 0}
         request_params_name = [
-            'user_id',
             'chat_id',
+            'user_id',
         ]
         request_params = {}
         for param in request_params_name:
             request_params[param] = request.query_params.get(param)
         if hqq_tool.is_request_empty(request_params, return_info):
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        user_id = request_params.get(request_params_name[0])
-        chat_id = request_params.get(request_params_name[1])
+        chat_id = request_params.get(request_params_name[0])
+        user_id = request_params.get(request_params_name[1])
 
         if not is_chat_exist(chat_id, return_info):
             # chat不存在
@@ -177,63 +177,31 @@ class ExitJoinUser(APIView):
         elif is_chat_delete(chat_id, return_info):
             # chat被删除
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        if not chat_models.Chat.objects.filter(id=chat_id, join_user_id=user_id, state=1).first():
-            return_info['code'] = 401
-            return_info['description'] = '此用户已不是此聊天的参与者'
-            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
-        # 异步
-        chat_tasks.exit_join_user.delay(chat_id, user_id)
-
-        return_info['code'] = 200
-        return_info['description'] = '退出成功'
-        return Response(return_info, status=status.HTTP_200_OK)
-
-
-class ExitCreateUser(APIView):
-    def post(self, request):
-        '''
-        创建者退出
-        '''
-        return_info = {'code': 0}
-        request_params_name = [
-            'user_id',
-            'chat_id',
-        ]
-        request_params = {}
-        for param in request_params_name:
-            request_params[param] = request.query_params.get(param)
-        if hqq_tool.is_request_empty(request_params, return_info):
-            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        user_id = request_params.get(request_params_name[0])
-        chat_id = request_params.get(request_params_name[1])
-
-        if not is_chat_exist(chat_id, return_info):
-            # chat不存在
-            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        elif not user_views.is_user_exist(user_id, return_info):
-            # user不存在
-            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        elif is_chat_delete(chat_id, return_info):
-            # chat被删除
-            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        elif not chat_models.Chat.objects.filter(id=chat_id, create_user_id=user_id).first():
+        if chat_models.Chat.objects.filter(id=chat_id, join_user_id=user_id, state=1).first():
+            # 参与者退出：异步
+            chat_tasks.exit_join_user.delay(chat_id, user_id)
+            return_info['code'] = 200
+            return_info['description'] = '退出成功'
+            return Response(return_info, status=status.HTTP_200_OK)
+        elif chat_models.Chat.objects.filter(id=chat_id, create_user_id=user_id).first():
+            # 创建者退出
+            chat = chat_models.Chat.objects.values('join_user_id') \
+                .filter(id=chat_id, state=1).first()
+            if chat:
+                # 存在参与者
+                join_user_id = chat['join_user_id']
+                chat_tasks.exit_create_user.delay(chat_id, user_id, join_user_id)
+            else:
+                # 不存在参与者
+                chat_tasks.exit_create_user.delay(chat_id, user_id)
+            return_info['code'] = 200
+            return_info['description'] = '退出成功'
+            return Response(return_info, status=status.HTTP_200_OK)
+        else:
             return_info['code'] = 401
             return_info['description'] = '此用户不是此聊天的创建者'
-            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-
-        chat = chat_models.Chat.objects.values('join_user_id')\
-            .filter(id=chat_id, state=1).first()
-        if chat:
-            # 有参与者加入的情况
-            join_user_id = chat['join_user_id']
-            chat_tasks.exit_create_user.delay(chat_id, user_id, join_user_id)
-        else:
-            chat_tasks.exit_create_user.delay(chat_id, user_id)
-
-        return_info['code'] = 200
-        return_info['description'] = '退出成功'
-        return Response(return_info, status=status.HTTP_200_OK)
+            return Response(return_info, status=status.HTTP_200_OK)
 
 
 def is_chat_exist(chat_id, return_info):
