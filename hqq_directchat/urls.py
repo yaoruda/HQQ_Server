@@ -13,7 +13,7 @@ version_1 = 'v1/'
 '''
 
 urlpatterns = [
-    path(version_1 + 'make-direct-chat/', views.MakeDirectChat.as_view()),
-    path(version_1 + 'exit-direct-chat/', views.ExitDirectChat.as_view()),
+    path(version_1 + 'add/', views.MakeDirectChat.as_view()),
+    path(version_1 + 'exit/', views.ExitDirectChat.as_view()),
 
 ]
