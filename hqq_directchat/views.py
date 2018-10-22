@@ -65,6 +65,7 @@ class MakeDirectChat(APIView):
         rongyun_return = rongyun_api.Group.create_direct_chat(user_id_1, user_id_2, new_chat_id, '私聊')
         if rongyun_return.result['code'] == 200:
             return_info['code'] = 200
+            return_info['description'] = '私聊创建成功'
             return_info['chat_id'] = new_chat_id
             return Response(return_info, status=status.HTTP_200_OK)
         else:
@@ -223,3 +224,29 @@ def is_direct_chat_id_users_exist(chat_id, user_id_1, user_id_2):
         if chat:
             return chat
     return None
+
+
+def is_directchat_ok(chat_id, return_info):
+    '''
+    私聊是否状态正常
+    :param group_id:
+    :param return_info:
+    :return1: True:正常
+    :return2: False:异常
+    '''
+    chat = directchat_models.DirectChat.objects.values('state').filter(id=chat_id).first()
+    if chat['state'] == 0 or chat['state'] == 1:
+        # 可加入or已满人
+        return True
+    elif chat['state'] == 2:
+        return_info['code'] = 402
+        return_info['description'] = '此私聊已被删除'
+        return False
+    elif chat['state'] == 3:
+        return_info['code'] = 403
+        return_info['description'] = '此私聊已被封'
+        return False
+    else:
+        return_info['code'] = 405
+        return_info['description'] = '此私聊异常'
+        return False

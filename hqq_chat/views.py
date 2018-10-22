@@ -93,25 +93,26 @@ class Join(APIView):
         elif not user_views.is_user_exist(user_id, return_info):
             # user不存在
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        elif is_chat_delete(chat_id, return_info):
-            # chat被删除
+        elif not is_chat_ok(chat_id, return_info):
+            # chat除了0或1的状态，都返回
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
+        chat = chat_models.Chat.objects.filter(id=chat_id).first()
         # 创建者进入：
-        if chat_models.Chat.objects.filter(id=chat_id, create_user_id=user_id, state=0, delete_mark=0).first():
+        if chat.create_user_id == user_id and chat.state == 0:
             # 创建者加入单聊(未满人)
             return_info['code'] = 201
             return_info['description'] = '创建者加入单聊(未满人)'
             return Response(return_info, status=status.HTTP_200_OK)
 
-        elif chat_models.Chat.objects.filter(id=chat_id, create_user_id=user_id, state=1, delete_mark=0).first():
+        elif chat.create_user_id == user_id and chat.state == 1:
             # 创建者加入单聊(已满人)
             return_info['code'] = 202
             return_info['description'] = '创建者加入单聊(已满人)'
             return Response(return_info, status=status.HTTP_200_OK)
 
         # 参与者进入：
-        elif chat_models.Chat.objects.filter(id=chat_id, join_user_id=user_id, state=1, delete_mark=0).first():
+        elif chat.join_user_id == user_id and chat.state == 1:
             # 参与者加入单聊
             return_info['code'] = 203
             return_info['description'] = '参与者加入单聊'
@@ -120,14 +121,13 @@ class Join(APIView):
         # 首次加入：
         else:
             update_time = datetime.datetime.now()
-            result = chat_models.Chat.objects\
+            add_chat = chat_models.Chat.objects\
                 .filter(id=chat_id, state=0, delete_mark=0)\
                 .update(state=1, join_user_id=user_id, update_time=update_time)
-            if result == 1:
+            if add_chat == 1:
                 # 数据库成功
                 rongyun_api = RongCloud()
-                result = chat_models.Chat.objects.values('title').filter(id=chat_id).first()
-                rongyun_return = rongyun_api.Group.join(user_id, chat_id, result['title'])
+                rongyun_return = rongyun_api.Group.join(user_id, chat_id, chat.title)
                 if rongyun_return.result['code'] == 200:
                     # 融云成功
                     return_info['code'] = 200
@@ -142,11 +142,10 @@ class Join(APIView):
                     return_info['code'] = 500
                     return_info['description'] = '聊天服务器异常，请稍后尝试'
                     return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-
             else:
                 # 数据库操作时：发现单聊已经满人
-                return_info['code'] = 402
-                return_info['description'] = '此聊天已满人或已被删除'
+                return_info['code'] = 401
+                return_info['description'] = '此聊天已满人'
                 return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -174,7 +173,7 @@ class ExitChatUser(APIView):
         elif not user_views.is_user_exist(user_id, return_info):
             # user不存在
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
-        elif is_chat_delete(chat_id, return_info):
+        elif is_chat_ok(chat_id, return_info):
             # chat被删除
             return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
@@ -213,11 +212,27 @@ def is_chat_exist(chat_id, return_info):
         return False
 
 
-def is_chat_delete(chat_id, return_info):
-    if chat_models.Chat.objects.filter(id=chat_id, delete_mark=1).first():
-        return_info['code'] = 404
-        return_info['description'] = '此聊天已被删除'
+def is_chat_ok(chat_id, return_info):
+    '''
+    聊天是否状态正常
+    :param chat_id:
+    :param return_info:
+    :return1: True:正常
+    :return2: False:异常
+    '''
+    chat = chat_models.Chat.objects.values('state').filter(id=chat_id).first()
+    if chat['state'] == 0 or chat['state'] == 1:
+        # 可加入or已满人
         return True
-    else:
+    elif chat['state'] == 2:
+        return_info['code'] = 402
+        return_info['description'] = '此聊天已被删除'
         return False
-
+    elif chat['state'] == 3:
+        return_info['code'] = 403
+        return_info['description'] = '此聊天已被封'
+        return False
+    else:
+        return_info['code'] = 405
+        return_info['description'] = '此聊天异常'
+        return False

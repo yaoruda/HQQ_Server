@@ -12,12 +12,15 @@ from django.db import models
 单聊二级话题 
 
 单聊标题 chat_title
-单聊年龄偏好 chat_age_prefer
-单聊性别偏好 chat_gender_prefer
-单聊距离偏好 chat_location_prefer
 
-单聊坐标位置 chat_location
-单聊所属城市 chat_city
+*单聊年龄偏好 chat_age_prefer
+*单聊性别偏好 chat_gender_prefer
+*单聊距离偏好 chat_location_prefer
+
+*单聊坐标位置 chat_location
+*单聊所属城市 chat_city
+
+?上一次聊天时间 grou_lastchat_time
 
 单聊热度 chat_popularity
 单聊状态 chat_state
@@ -41,7 +44,7 @@ class Chat(models.Model):
     popularity = models.IntegerField(verbose_name='热度')
     state = models.SmallIntegerField(
         verbose_name='状态',
-        choices=((0, '待加入'), (1, '已满人'), (2, '已删除'), (3, '已封禁')),
+        choices=((0, '待加入'), (1, '已满人'), (2, '已删除'), (3, '已封禁'), (4, '私聊创建时融云失败')),
     )
     create_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
     update_time = models.DateTimeField(auto_now=True, verbose_name='更新时间')
