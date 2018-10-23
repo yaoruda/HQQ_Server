@@ -5,6 +5,8 @@ import time as sys_time
 import uuid as sys_uuid
 import acm
 import json
+from django.http import HttpResponse
+from qiniu import Auth
 
 
 def is_request_empty(request_params, return_info):
@@ -68,3 +70,28 @@ def get_acm_data(data_name):
     for key in data_json:
         data_dict[key] = data_json[key]
     return data_dict
+
+
+def get_token(key):
+    # key 上传到七牛后保存的文件名
+
+    access_key = 'ODiiBhlSmrpiua7rZ4l8cx8tuOjsAQ2mdtuYKtUV'
+    secret_key = 'YaQbBkbWaXO7voNhP191JQhrr6XoKyLnruQL_da_'
+    # 构建鉴权对象
+    q = Auth(access_key, secret_key)
+    # 要上传的空间
+    bucket_name = 'hqq-picture'
+
+    # 上传策略示例
+    # https://developer.qiniu.com/kodo/manual/1206/put-policy
+    # 生成上传 Token，可以指定过期时间等
+    policy = {
+        # 'callbackUrl':'https://requestb.in/1c7q2d31',
+        # 'callbackBody':'filename=$(fname)&filesize=$(fsize)'
+        # 'persistentOps':'imageView2/1/w/200/h/200' 资源上传成功后触发执行的预转持久化处理指令列表。
+        'fsizeLimit':'2048', # 限定上传文件大小最大值
+        'mimeLimit':'image/*' #限定用户上传的文件类型 image/*表示只允许上传图片类型
+    }
+    # 3600为token过期时间，秒为单位。3600等于一小时
+    token = q.upload_token(bucket_name, key, 3600, policy)
+    return token

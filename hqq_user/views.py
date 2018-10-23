@@ -18,6 +18,10 @@ from hqq_tool import views as hqq_tool
 from hqq_user import models as user_models
 from hqq_user import tasks
 
+from aliyunsdkcore.client import AcsClient
+from hqq_user.aliyunsdkdysmsapi.request.v20170525 import SendSmsRequest
+import uuid
+
 
 class VerifyToken(APIView):
     """
@@ -89,14 +93,54 @@ class SendVerifyCode(APIView):
         verify_code = random.randint(100, 999)  # 生成随机3位验证码
         # TODO:发送验证码...
 
-        if True:  # 发送验证码成功
-            tasks.save_verify_code.delay(verify_code, phone)  # 异步
+        # 注意：不要更改
+        REGION = "cn-hangzhou"
+        # PRODUCT_NAME = "Dysmsapi"
+        # DOMAIN = "dysmsapi.aliyuncs.com"
+        ACCESS_KEY_ID = "LTAILY875e5ZQLZm"
+        ACCESS_KEY_SECRET = "5PLGSZCnWB0XBDnCSPe4Ab0y9T1vJ6"
+        # verify_code = str(verify_code)
+        print(verify_code)
+        business_id = uuid.uuid1()
+        # template_param = "{\"number\":verify_code}"
+        # print("{\"number\":\""+"{}".format(verify_code)+"\"}")
+        template_param = "{\"number\":\""+"{}".format(verify_code)+"\"}"
+        # template_param = json.dumps(template_param)
+        # TemplateParam = "{"name":"Tom", "code"":"12"}"
+        acs_client = AcsClient(ACCESS_KEY_ID, ACCESS_KEY_SECRET, REGION)
+
+        smsRequest = SendSmsRequest.SendSmsRequest()
+        # 申请的短信模板编码,必填
+        smsRequest.set_TemplateCode("SMS_78295040")
+
+        # 短信模板变量参数
+        # if template_param is not None:
+        smsRequest.set_TemplateParam(template_param)
+
+        # 设置业务请求流水号，必填。
+        smsRequest.set_OutId(business_id)
+
+        # 短信签名
+        smsRequest.set_SignName("极市")
+
+        # 短信发送的号码列表，必填。
+        smsRequest.set_PhoneNumbers(phone)
+
+        # 调用短信发送接口，返回json
+        smsResponse = acs_client.do_action_with_exception(smsRequest)
+
+        # TODO 业务处理
+
+        # return smsResponse
+        #
+        if smsResponse:  # 发送验证码成功
+            # tasks.save_verify_code.delay(verify_code, phone)  # 异步
             return_info['code'] = 200
             return_info['description'] = '发送验证码成功'
-            return_info['verify_code'] = verify_code
+            return_info['smsResponse'] = smsResponse
             return Response(return_info, status=status.HTTP_200_OK)
-        # else:
-            # TODO:处理短信验证码发送失败的情况
+        # # else:
+        #     # TODO:处理短信验证码发送失败的情况
 
 
 class RegisterAndLogin(APIView):
