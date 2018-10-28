@@ -10,7 +10,6 @@ from hqq_tool.rongcloud import RongCloud
 from hqq_group import models as group_models
 from hqq_user import views as user_views
 
-
 class Add(APIView):
 
     def post(self, request):
