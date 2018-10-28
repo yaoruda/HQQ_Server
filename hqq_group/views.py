@@ -128,14 +128,14 @@ class Join(APIView):
             .filter(group_id=group_id, user_id=user_id)\
             .first()
         if group_member:
-            if group_member['state'] == 0 or group_member['state'] == 1:
-                # 0-正常，1-已被禁言
+            if group_member['state'] == 0:
+                # 0-正常
                 return_info['code'] = 202
                 return_info['description'] = '群成员进入群聊'
                 return Response(return_info, status=status.HTTP_200_OK)
 
             # 2: 绝对不能进入
-            elif group_member['state'] == 3:
+            elif group_member['state'] == 2:
                 # 已被踢出
                 return_info['code'] = 401
                 return_info['description'] = '您已被踢出群聊'
@@ -188,7 +188,7 @@ class Join(APIView):
                 group.state = 0
                 group.member_number = group.max_member_number - 1
                 group.save()
-                new_member.state = 4
+                new_member.state = 3
                 new_member.delete_mark = 1
                 new_member.save()
                 return_info['code'] = 500
@@ -200,7 +200,66 @@ class Join(APIView):
         return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
 
 
+class Exit(APIView):
+    def post(self, request):
+        '''
+        用户退出群聊
+        '''
+        return_info = {'code': 0}
+        request_params_name = [
+            'group_id',
+            'user_id',
+        ]
+        request_params = {}
+        for param in request_params_name:
+            request_params[param] = request.query_params.get(param)
+        if hqq_tool.is_request_empty(request_params, return_info):
+            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
+        group_id = request_params.get(request_params_name[0])
+        user_id = request_params.get(request_params_name[1])
 
+        if not is_group_id_exist(group_id, return_info):
+            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
+        elif not user_views.is_user_exist(user_id, return_info):
+            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
+        elif not is_group_ok(group_id, return_info):
+            return Response(return_info, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1:成员退出
+        group = group_models.Group.objects.filter(id=group_id).first()
+        members = list_group_members(group_id)
+
+        return_info['code'] = 200
+        return_info['description'] = '200'
+        return Response(return_info, status=status.HTTP_200_OK)
+
+
+        # if group.create_user_id == user_id:
+
+        # if chat_models.Chat.objects.filter(id=chat_id, join_user_id=user_id, state=1).first():
+        #     # 参与者退出：异步
+        #     chat_tasks.exit_join_user.delay(chat_id, user_id)
+        #     return_info['code'] = 200
+        #     return_info['description'] = '退出成功'
+        #     return Response(return_info, status=status.HTTP_200_OK)
+        # elif chat_models.Chat.objects.filter(id=chat_id, create_user_id=user_id).first():
+        #     # 创建者退出
+        #     chat = chat_models.Chat.objects.values('join_user_id') \
+        #         .filter(id=chat_id, state=1).first()
+        #     if chat:
+        #         # 存在参与者
+        #         join_user_id = chat['join_user_id']
+        #         chat_tasks.exit_create_user.delay(chat_id, user_id, join_user_id)
+        #     else:
+        #         # 不存在参与者
+        #         chat_tasks.exit_create_user.delay(chat_id, user_id)
+        #     return_info['code'] = 200
+        #     return_info['description'] = '退出成功'
+        #     return Response(return_info, status=status.HTTP_200_OK)
+        # else:
+        #     return_info['code'] = 401
+        #     return_info['description'] = '此用户不是此聊天的创建者'
+        #     return Response(return_info, status=status.HTTP_200_OK)
 
 def is_group_id_exist(group_id, return_info):
     '''
@@ -232,7 +291,7 @@ def is_group_ok(group_id, return_info):
         return True
     elif group['state'] == 2:
         return_info['code'] = 402
-        return_info['description'] = '此群聊已被删除'
+        return_info['description'] = '此群聊已解散'
         return False
     elif group['state'] == 3:
         return_info['code'] = 403
@@ -242,3 +301,15 @@ def is_group_ok(group_id, return_info):
         return_info['code'] = 405
         return_info['description'] = '此群聊异常'
         return False
+
+
+def list_group_members(group_id):
+    group_members = group_models.GroupMember.objects.filter(group_id=group_id, delete_mark=0).all()
+    members = {
+        'count': group_members.count(),
+    }
+    if group_members:
+        for i in range(0, group_members.count()):
+            print(group_members[i].id)
+    return group_members
+

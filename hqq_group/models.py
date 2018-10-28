@@ -91,7 +91,7 @@ class GroupMember(models.Model):
     user_id = models.CharField(max_length=32, verbose_name='参与群聊的此用户id主键')
     state = models.SmallIntegerField(
         verbose_name='状态',
-        choices=((0, '正常'), (1, '已被禁言'), (2, '已主动退群'), (3, '已被踢出'), (4, '融云创建时错误')),
+        choices=((0, '正常'), (1, '已主动退群'), (2, '已被踢出'), (3, '融云创建时错误')),
     )
     answer = models.CharField(max_length=100, verbose_name='加群问题回答')
 
