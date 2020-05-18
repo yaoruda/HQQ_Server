@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # __author__= "Ruda"
-# Data: 2018/10/16
+# Date: 2018/10/16
 
 '''
 import os

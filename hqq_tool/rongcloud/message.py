@@ -426,3 +426,32 @@ class Message(RongCloudBase):
             action='/message/history/delete.json',
             params={"date": date})
         return Response(r, desc)
+
+    def notificationSet(self, conversationType, requestId, targetId, isMuted):
+        """
+        设置用户某会话接收新消息时是否进行消息提醒。
+        """
+
+        desc = {
+            "name": "CodeSuccessReslut",
+            "desc": " http 成功返回结果",
+            "fields": [{
+                "name": "code",
+                "type": "Integer",
+                "desc": "返回码，200 为正常。"
+            }, {
+                "name": "errorMessage",
+                "type": "String",
+                "desc": "错误信息。"
+            }]
+        }
+        r = self.call_api(
+            method=('API', 'POST', 'application/x-www-form-urlencoded'),
+            action='/conversation/notification/set.json',
+            params={
+                "conversationType": conversationType,
+                "requestId": requestId,
+                "targetId": targetId,
+                "isMuted": isMuted
+            })
+        return Response(r, desc)

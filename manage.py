@@ -1,9 +1,11 @@
 #!/usr/bin/env python
+
 import os
 import sys
 
 if __name__ == '__main__':
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DRF.settings')
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'DRF.settings.dev')
+    print(os.environ.get('DJANGO_SETTINGS_MODULE'))
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:

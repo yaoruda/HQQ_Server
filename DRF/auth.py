@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # __author__= "Ruda"
-# Data: 2018/9/15
+# Date: 2018/9/15
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from hqq_user import models

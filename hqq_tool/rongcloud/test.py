@@ -195,7 +195,7 @@ class Example(unittest.TestCase):
         self.assertEqual(r.result['code'], 200)
 
     def test_add(self):
-        r = self.rcloud.Wordfilter.add(word='money')
+        r = self.rcloud.Wordfilter.create_forum(word='money')
         self.log('add', r)
         self.assertTrue('code' in r.result)
         self.assertEqual(r.result['code'], 200)
